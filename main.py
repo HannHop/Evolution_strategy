@@ -141,11 +141,15 @@ ax.plot(numpy.take(data, [0], axis=1), numpy.take(data, [1], axis=1))  # i o
 ax.set(xlabel='input', ylabel='output',
        title='original data from file')
 ax.grid()
-fig.savefig("data8.png")
+#fig.savefig("data8.png")
 
 # plot of data o_hat vs i
-fig, ax = plt.subplots()
-ax.plot(numpy.take(data, [0], axis=1), [best_abcE[0] * (numpy.square(row[0]) - best_abcE[1]*math.cos(best_abcE[1] * numpy.pi * row[0])) for row in numpy.take(data, [0], axis=1)])
+#fig, ax = plt.subplots()  
+#                                                                                                              |
+#                                                                                                              |
+#                                                                                                              |
+#                                                                                                              v o ty luju ty
+ax.plot(numpy.take(data, [0], axis=1), [best_abcE[0] * (numpy.square(row[0]) - best_abcE[1]*math.cos(best_abcE[2] * numpy.pi * row[0])) for row in numpy.take(data, [0], axis=1)])
 ax.set(xlabel='input', ylabel='output',
        title='o_hat vs input')
 ax.grid()
