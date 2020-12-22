@@ -18,9 +18,10 @@ N = 101
 N_max = 200
 tau1 = 1/math.sqrt(2*n)
 tau2 = 1/math.sqrt(2*math.sqrt(n))
-mi_size = 1000
+mi_size = 200  # 100,200,500,1000
 lambda_size = mi_size * 5
 best_abcE = None
+convergence_flag = 0
 
 inputs = numpy.empty((N, 1), float)
 outputs = numpy.empty((N, 1), float)
@@ -51,7 +52,7 @@ def mse_calc(a, b, c):
 
 def parent_offspring_error():  # |E_o - E_p| <= d
     for i in range(mi_size):
-        if mi[i][6] > 0.23:
+        if mi[i][6] > 0.26:
             continue
         for j in range(5):
             if abs(mi[i][6] - lambda_pop[i * 5 + j][6]) <= d:  # and mi[i][6] <= 0.25 and lambda_pop[i + j][6] <= 0.25:
@@ -71,13 +72,13 @@ for i in range(mi_size):  # make initial population: abc - unif dist val from -1
     sc = rng.uniform(0, 10)
     mi = numpy.append(mi, [[a, b, c, sa, sb, sc, mse_calc(a, b, c)]], axis=0)
 
-
+start = time.time()
 for it in range(N_max):
     print("generation: ", t)
-    start = time.time()
+    # start = time.time()
 
     lambda_pop = numpy.empty((lambda_size, 7), float)
-    for i in range(mi_size):  # make mutants XDD
+    for i in range(mi_size):  # make mutants
         # lambda = 5mi, variable name lambda_pop since "lambda" itself is reserved
         # -> each parent should be mutated 5 times
         for j in range(5):  # mi args: 0 = a, 1 = b, 2 = c, 3 = sa, 4 = sb, 5 = sc
@@ -101,16 +102,11 @@ for it in range(N_max):
     min_lambda_pop_error_index = numpy.where(lambda_pop_errors == numpy.amin(lambda_pop_errors))
     # print(min_lambda_pop_error_index[0][0])  #index of the best offspring
 
-    # if abs(lambda_pop[min_lambda_pop_error_index[0][0]][6] - mi[min_mi_error_index[0][0]][6]) <= d:  # very best parent and very best offspring
-    # best_child = lambda_pop[min_lambda_pop_error_index[0][0]]
-    # print('found!!!')
-    # best_abcE = [best_child[0], best_child[1], best_child[2], best_child[6]]
-    # break
-
-    poe = parent_offspring_error()  # version with best offspring of each parent
-    if poe != -1:
-        print('found!!!')
-        best_abcE = [lambda_pop[poe][0], lambda_pop[poe][1], lambda_pop[poe][2], lambda_pop[poe][6]]
+    if convergence_flag == 0 and abs(lambda_pop[min_lambda_pop_error_index[0][0]][6] - mi[min_mi_error_index[0][0]][6]) <= d:  # very best parent and very best offspring
+        best_child = lambda_pop[min_lambda_pop_error_index[0][0]]
+        print('convergence found!!! At iteration: ', t)
+        convergence_flag = 1
+        best_abcE = [best_child[0], best_child[1], best_child[2], best_child[6]]
         break
 
     mi_and_lambda = numpy.append(mi, lambda_pop, axis=0)
@@ -124,14 +120,17 @@ for it in range(N_max):
         t_best = t
     t = t + 1
 
-    end = time.time()
-    elapsed = end - start
-    print("took {0:.2f}s".format(elapsed))
+    # end = time.time()
+    # elapsed = end - start
+    # print("took {0:.2f}s".format(elapsed))
+
+end = time.time()
+elapsed = end - start
 
 print("Best [a,b,c] = [" + str(best_abcE[0]) +', ' + str(best_abcE[1]) +', ' + str(best_abcE[2]) + ']')
 print("MSE = " + str(best_abcE[3]))
-print("iteration: " + str(t_best))
-
+# print("best results at iteration: " + str(t_best))
+print("took {0:.2f}s".format(elapsed))
 # plot of data 8 or 9:
 fig, ax = plt.subplots()
 ax.plot(numpy.take(data, [0], axis=1), numpy.take(data, [1], axis=1))  # i o
@@ -146,6 +145,4 @@ ax.plot(numpy.take(data, [0], axis=1), [best_abcE[0] * (numpy.square(row[0]) - b
 ax.set(xlabel='input', ylabel='output',
        title='o_hat vs input')
 ax.grid()
-fig.savefig("out_8.png")
-
-# version that is hopefully good enough, best results so far
+fig.savefig("out_8_mi200.png")
